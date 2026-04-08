@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hierarchical Knowledge Base</title>
+    <style>
+        :root {
+            --primary: #3498db;
+            --bg: #f4f7f6;
+            --text: #333;
+            --card-bg: #fff;
+        }
+
+        body {
+            font-family: -apple-system, sans-serif;
+            line-height: 1.6;
+            max-width: 900px;
+            margin: 40px auto;
+            padding: 0 20px;
+            background-color: var(--bg);
+            color: var(--text);
+        }
+
+        .search-container { margin-bottom: 30px; }
+        #searchBar {
+            width: 100%;
+            padding: 15px 25px;
+            border-radius: 30px;
+            border: 2px solid #ddd;
+            font-size: 1rem;
+            outline: none;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+.controls {
+    margin-bottom: 20px;
+    display: flex;
+    gap: 10px;
+}
+
+.controls button {
+    padding: 8px 15px;
+    border-radius: 5px;
+    border: 1px solid #ddd;
+    background: #fff;
+    cursor: pointer;
+    font-size: 0.9rem;
+    color: #555;
+    transition: all 0.2s;
+}
+
+.controls button:hover {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+}
+
+        /* Tree Styling */
+        .tree-group {
+            margin-left: 20px;
+            border-left: 2px solid #eee;
+            padding-left: 15px;
+        }
+
+        details {
+            background: var(--card-bg);
+            margin-bottom: 5px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        /* Differentiate Categories from Questions */
+        details.category > summary {
+            color: var(--primary);
+            font-size: 1.1rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        summary {
+            padding: 15px;
+            cursor: pointer;
+            font-weight: bold;
+            list-style: none;
+            outline: none;
+        }
+
+        summary::before {
+            content: '▹';
+            margin-right: 10px;
+            display: inline-block;
+            transition: transform 0.2s;
+        }
+
+        details[open] > summary::before {
+            transform: rotate(90deg);
+        }
+
+        .answer-content {
+            padding: 0 10px 10px 20px;
+            color: #666;
+        }
+
+        .hidden { display: none; }
+        
+        .highlight { background-color: yellow; }
+    </style>
+</head>
+<body>
+
+    <h1>3-Space approach for healthy and happy life</h1>
+
+    <div class="search-container">
+        <input type="text" id="searchBar" placeholder="Search keywords..." onkeyup="doSearch()">
+    </div>
+
+    <div class="controls">
+	<button onclick="toggleAll(true)">Expand All</button>
+        <button onclick="toggleAll(false)">Collapse All</button>
+    </div>
+
+    <div id="faq-tree"></div>
+
+    <script>
+        /**
+         * 1. THE DATA (Your "faq.html" equivalent)
+         * You can easily add/edit this section. 
+         * Structure: { title: "Name", type: "category", children: [...] }
+         * OR: { q: "Question", a: "Answer", type: "question" }
+         */
+        const faqData = [
+         {
+                title: "3 Spaces",
+                type: "category",
+                children: [
+                     { q: "What is 3 spaces concept?", a: "Everybody wants to protect privacy. But we also need to manage our relationships. Making sure whose space we are talking about brings clarity.", type: "question" },
+                     { q: "Why is 3 spaces concept important to me?", a: "Everybody wants to lead a happy and healthy life. But we can be happy and healthy only if the systems we are part of are also happy and healthy.", type: "question" },
+                     { q: "Okay, but what is a system in simple terms?", a: "System is a collection of interconnected or interrelated entities that work together as a unified whole to achieve a specific purpose or goal. A change in one affects the behaviour of the whole. The system has defined boundary that separates it from its surrounding environment.", type: "question" },
+                   {
+                        title: "My space",
+                        type: "category",
+                        children: [
+                            { q: "What is my space?", a: "There are certain matters in which we want to have a final say", type: "question" },
+                            { q: "Does it also mean that others too need their space?", a: "Of course, and we must respect their privacy.", type: "question" },
+                        ]
+                    },
+                   {
+                        title: "Your space",
+                        type: "category",
+                        children: [
+                            { q: "What is your space?", a: "There are certain matters in which we want to have a final say", type: "question" },
+                            { q: "Does it also mean that others too need their space?", a: "Of course, and we must respect their provacy.", type: "question" },
+                        ]
+                    },
+                    {
+                        title: "Our space",
+                        type: "category",
+                        children: [
+                            { q: "What is our space?", a: "There are certain matters in which we want to have a final say", type: "question" },
+                            { q: "Does it also mean that others too need their space?", a: "Of course, and we must respect their provacy.", type: "question" }
+                        ]
+                    },
+		]
+            },
+
+ 
+        ];
+
+        /**
+         * 2. THE LOGIC (The "index.html" engine)
+         */
+        const treeContainer = document.getElementById('faq-tree');
+
+        function buildTree(data, container) {
+            data.forEach(item => {
+                const details = document.createElement('details');
+                const summary = document.createElement('summary');
+                
+                if (item.type === 'category') {
+                    details.className = 'category tree-group';
+                    summary.textContent = item.title;
+                    details.appendChild(summary);
+                    buildTree(item.children, details); // Recurse!
+                } else {
+                    details.className = 'question-item';
+                    summary.textContent = item.q;
+                    const answer = document.createElement('div');
+                    answer.className = 'answer-content';
+                    answer.innerHTML = item.a;
+                    details.appendChild(summary);
+                    details.appendChild(answer);
+                }
+                container.appendChild(details);
+            });
+        }
+
+        // Initial Build
+        buildTree(faqData, treeContainer);
+
+        /**
+         * 3. SEARCH LOGIC (and Expand Collapse logic)
+         */
+    function toggleAll(isOpen) {
+    const allDetails = document.querySelectorAll('details');
+    allDetails.forEach(details => {
+        details.open = isOpen;
+    });
+}  
+	  function doSearch() {
+            const query = document.getElementById('searchBar').value.toLowerCase();
+            const allDetails = document.querySelectorAll('details');
+
+            allDetails.forEach(el => {
+                const text = el.textContent.toLowerCase();
+                if (text.includes(query)) {
+                    el.classList.remove('hidden');
+                    // Automatically open items that match the search
+                    if (query.length > 0) el.open = true;
+                } else {
+                    el.classList.add('hidden');
+                    el.open = false;
+                }
+            });
+        }
+    </script>
+</body>
+</html>
